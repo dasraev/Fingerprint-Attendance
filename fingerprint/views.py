@@ -1,5 +1,5 @@
 from django.utils import timezone
-from .models import Employee, Attendance
+from .models import Student, Attendance
 from django.shortcuts import render
 import cv2
 import numpy as np
@@ -36,9 +36,9 @@ def match_fingerprint(sample):
 
     best_score = counter = 0
     filename = image = kp1 = kp2 = mp = None
-    for employee in Employee.objects.all():
+    for student in Student.objects.all():
         sift = cv2.SIFT_create()
-        fingerprint_img = cv2.imread(employee.fingerprint.path)
+        fingerprint_img = cv2.imread(student.fingerprint.path)
         keypoints_1, des1 = sift.detectAndCompute(sample, None)
         keypoints_2, des2 = sift.detectAndCompute(fingerprint_img, None)
 
@@ -58,7 +58,7 @@ def match_fingerprint(sample):
             keypoints = len(keypoints_2)
         if len(match_points) / keypoints * 100 > best_score:
             best_score = len(match_points) / keypoints * 100
-            filename = employee.fingerprint
+            filename = student.fingerprint
             image = fingerprint_img
             kp1, kp2, mp = keypoints_1, keypoints_2, match_points
     if best_score >= 50:
@@ -70,12 +70,12 @@ def clock_in(request):
         sample = np.array(Image.open(sample))
         matched_fingerprint = match_fingerprint(sample)
         try:
-            employee = Employee.objects.get(fingerprint__exact=matched_fingerprint)
-            attendance = Attendance.objects.create(employee=employee, clock_in_time=timezone.now())
+            student = Student.objects.get(fingerprint__exact=matched_fingerprint)
+            attendance = Attendance.objects.create(student=student, clock_in_time=timezone.now())
             messages.success(request,'BARMOQ IZI MOS KELDI')
 
             return redirect('clockin')
-        except Employee.DoesNotExist:
+        except Student.DoesNotExist:
             messages.error(request,'BARMOQ IZI MOS KELMADI, ILTIMOS QAYTADAN URINIB KO\'RING')
             return redirect('clockin')
     return render(request,'clockin.html')
@@ -87,13 +87,13 @@ def clock_out(request):
         sample = np.array(Image.open(sample))
         matched_fingerprint = match_fingerprint(sample)
         try:
-            employee = Employee.objects.get(fingerprint__exact=matched_fingerprint)
+            student = Student.objects.get(fingerprint__exact=matched_fingerprint)
             messages.success(request,'BARMOQ IZI MOS KELDI')
-        except Employee.DoesNotExist:
+        except Student.DoesNotExist:
             messages.error(request,'BARMOQ IZI MOS KELMADI, ILTIMOS QAYTADAN URINIB KO\'RING')
             return redirect('clockout')
         try:
-            attendance = Attendance.objects.filter(employee=employee).latest('clock_in_time')
+            attendance = Attendance.objects.filter(student=student).latest('clock_in_time')
             attendance.clock_out_time = timezone.now()
             attendance.save()
         except Attendance.DoesNotExist:
@@ -108,13 +108,12 @@ def view_attendance(request):
     page_num = request.GET.get('page', 1)
     today = datetime.today()
     attendance_records = []
-    attendance = Attendance.objects.order_by('clock_in_time')
-    for employee in Employee.objects.annotate(
+    for student in Student.objects.annotate(
     last_clock_in=Max('attendances__clock_in_time')
 ).order_by('-last_clock_in'):
         attendance_records.append({
-            'employee': employee,
-            'attendance': Attendance.objects.filter(Q(employee=employee) & (Q(clock_in_time__date=today) | Q(clock_out_time__date=today)) ).last()
+            'student': student,
+            'attendance': Attendance.objects.filter(Q(student=student) & (Q(clock_in_time__date=today) | Q(clock_out_time__date=today)) ).last()
         })
     context = {'attendance_records': attendance_records}
     paginator = Paginator(attendance_records, 5)
@@ -127,11 +126,11 @@ def view_attendance(request):
     print(context['attendance_records'])
     return render(request, 'view_attendance.html', {'page_obj':page_obj})
 
-def employee_attendances(request,pk):
+def student_attendances(request,pk):
     page_num = request.GET.get('page', 1)
 
-    employee = get_object_or_404(Employee,pk=pk)
-    attendances = Attendance.objects.filter(employee=employee)
+    student = get_object_or_404(Student,pk=pk)
+    attendances = Attendance.objects.filter(student=student)
     paginator = Paginator(attendances, 5)
 
     try:
@@ -140,6 +139,6 @@ def employee_attendances(request,pk):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
-    return render(request,'employee_attendances.html',{'page_obj':page_obj})
+    return render(request,'student_attendances.html',{'page_obj':page_obj})
 
 

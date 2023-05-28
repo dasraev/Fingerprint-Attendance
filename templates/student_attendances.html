@@ -45,7 +45,7 @@
 
     {% for attendance in page_obj %}
         <tr>
-            <td> {{ attendance.employee.user.first_name }} {{attendance.employee.user.last_name}} </td>
+            <td> {{ attendance.student.user.first_name }} {{attendance.student.user.last_name}} </td>
             <td> {{ attendance.clock_in_time }} </td>
             <td> {{ attendance.clock_out_time }} </td>
         </tr>
