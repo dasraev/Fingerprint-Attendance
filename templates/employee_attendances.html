@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+	<link rel="stylesheet" href="{% static 'book/home.css' %}">
+
+{% endblock %}
+
+{% block content %}
+
+<!--      &lt;!&ndash; Example single danger button &ndash;&gt;-->
+<!--{#    {% if page_obj.paginator.num_pages >= 1 %}#}-->
+<!--    <h3 style="text-align: center" >-->
+
+<!--    {% if wished_books %}-->
+<!--        {% if nomatch %}-->
+<!--            Books based on your wish not found<br>-->
+<!--            This is all books offered by people-->
+<!--        {% else %}-->
+<!--            <p>Matched offered-books based on your wish</p>-->
+<!--        {% endif %}-->
+<!--    {% else %}-->
+<!--        You don't have wished books,please wish a book<br>-->
+<!--        This is all books offered by people-->
+
+<!--    {% endif %}-->
+<!--    </h3>-->
+
+<!--<div class="btn-group">-->
+<!--  <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--    Filter by-->
+<!--  </button>-->
+<!--  <ul class="dropdown-menu">-->
+<!--      <li><a class="dropdown-item" href="?filter=country">Country</a></li>-->
+<!--      </li> <a class="dropdown-item" href="?filter=region">Region</a></li>-->
+<!--      </li> <a class="dropdown-item" href="?filter=education">Education Place</a></li>-->
+<!--  </ul>-->
+<!--</div>-->
+<table>
+		<tr>
+			<th>Name</th>
+			<th>Clock In</th>
+			<th>Clock Out</th>
+		</tr>
+
+    {% for attendance in page_obj %}
+        <tr>
+            <td> {{ attendance.employee.user.first_name }} {{attendance.employee.user.last_name}} </td>
+            <td> {{ attendance.clock_in_time }} </td>
+            <td> {{ attendance.clock_out_time }} </td>
+        </tr>
+    {% endfor %}
+</table>
+{% include 'pagination.html' %}
+
+
+
+{% endblock %}
+
+
+
+
+
+
+<!--<script>-->
+<!--$(document).ready(function(){-->
+<!--  $("#myInput").on("keyup", function() {-->
+<!--    var value = $(this).val().toLowerCase();-->
+<!--    $(".dropdown-menu li").filter(function() {-->
+<!--      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)-->
+<!--    });-->
+<!--  });-->
+<!--});-->
+<!--</script>-->
